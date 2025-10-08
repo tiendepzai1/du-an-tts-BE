@@ -11,15 +11,10 @@ const app = express();
 
 
 
-import cors from "cors";
+
 
 app.use(
-  cors({
-    origin: [
-      "https://your-frontend.vercel.app", // domain frontend thật của bạn
-    ],
-    credentials: true, // cho phép gửi cookie/token
-  })
+  cors()
 );
 
 
