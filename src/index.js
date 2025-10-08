@@ -9,23 +9,19 @@ import cors from "cors";
 
 const app = express();
 
-const allowedOrigins = [
-  "https://du-an-tts.vercel.app", // domain frontend thật
-  "http://localhost:5173",        // nếu bạn test local
-];
+
+
+import cors from "cors";
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
-    credentials: true, // 🔥 cho phép cookie/token
+    origin: [
+      "https://your-frontend.vercel.app", // domain frontend thật của bạn
+    ],
+    credentials: true, // cho phép gửi cookie/token
   })
 );
+
 
 // kết nối cơ sở dữ liệu
 mongoose.connect(`mongodb+srv://ngaule29_db_user:levantien123@cluster0.b5g0a6x.mongodb.net/db_base333?retryWrites=true&w=majority&appName=Cluster0`)
