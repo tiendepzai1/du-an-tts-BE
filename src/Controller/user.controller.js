@@ -5,9 +5,13 @@ import jwt from "jsonwebtoken";
 export const register = async (req, res) => {
   try {
 
-    const userExist = await User.findOne({ username: req.body.username });
-    if (userExist) {
+    const userExistEmail = await User.findOne({ email: req.body.email  });
+        const userExistUsername = await User.findOne({  username : req.body.username });
+    if (userExistUsername) {
       return res.status(400).json({ message: `Đã tồn tại ${req.body.username}, vui lòng đổi tên người dùng khác` })
+    }
+     if (userExistEmail) {
+      return res.status(400).json({ message: `Đã tồn tại ${req.body.email}, vui lòng đổi tên người dùng khác` })
     }
 
 
@@ -30,8 +34,9 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
+    const data = {username : req.body.username}
 
-    const user = await User.findOne({ username: req.body.username }).select("+password");
+    const user = await User.findOne({ email: req.body.email, username : req.body.username }).select("+password");
 
     if (!user) {
       return res.status(400).json({ message: "Sai tài khoản" })
@@ -41,10 +46,12 @@ export const login = async (req, res) => {
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Sai mật khẩu" })
+      
     }
 
 
     const token = jwt.sign({ id: user.id }, "123456", { expiresIn: "5m" })
+
     res.cookie("access_token", token, {
       httpOnly: true,
       secure: false,
@@ -57,7 +64,7 @@ export const login = async (req, res) => {
     return res.status(200).json({
       message: "Đăng nhập thành công",
       token,
-      data: user
+      data : user
     })
 
   } catch (error) {
@@ -66,5 +73,5 @@ export const login = async (req, res) => {
 }
 
 export const Logout = async (req, res) => {
-
+res.clearCookie()
 }

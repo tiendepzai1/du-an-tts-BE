@@ -9,6 +9,7 @@ import cors from "cors";
 
 const app = express();
 
+app.use(cors());
 // kết nối cơ sở dữ liệu
 mongoose.connect(`mongodb+srv://ngaule29_db_user:levantien123@cluster0.b5g0a6x.mongodb.net/db_base333?retryWrites=true&w=majority&appName=Cluster0`)
   .then(() => console.log('Connected to MongoDB'))
@@ -16,7 +17,6 @@ mongoose.connect(`mongodb+srv://ngaule29_db_user:levantien123@cluster0.b5g0a6x.m
 
 app.use(express.json());
 app.use(express.urlencoded());
-app.use(cors());
 
 app.get('/', (request, response) => {
   return response.send("Hello tien")
