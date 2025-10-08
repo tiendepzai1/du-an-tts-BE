@@ -37,10 +37,12 @@ export const login = async (req, res) => {
     const data = {username : req.body.username}
 
     const user = await User.findOne({ email: req.body.email, username : req.body.username }).select("+password");
-
+     
     if (!user) {
-      return res.status(400).json({ message: "Sai tài khoản" })
+      return res.status(400).json({ message: "email k ton tai" })
     }
+    
+
 
 
     const isMatch = await bcrypt.compare(req.body.password, user.password);
@@ -58,6 +60,7 @@ export const login = async (req, res) => {
       sameSite: "strict",
       maxAge: 15 * 60 * 1000
     });
+    
 
 
     user.password = undefined;
