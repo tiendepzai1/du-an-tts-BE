@@ -5,14 +5,22 @@ import jwt from "jsonwebtoken";
 export const register = async (req, res) => {
   try {
 
-    const userExistEmail = await User.findOne({ email: req.body.email  });
-        const userExistUsername = await User.findOne({  username : req.body.username });
+    const userExistEmail = await User.findOne({ email: req.body.email });
+    const userExistUsername = await User.findOne({ username: req.body.username });
     if (userExistUsername) {
-      return res.status(400).json({ message: `Đã tồn tại ${req.body.username}, vui lòng đổi tên người dùng khác` })
+      return res.status(400).json({
+        field: "username",
+        message: `Tên người dùng "${req.body.username}" đã tồn tại, vui lòng chọn tên khác`
+      });
     }
-     if (userExistEmail) {
-      return res.status(400).json({ message: `Đã tồn tại ${req.body.email}, vui lòng đổi tên người dùng khác` })
+
+    if (userExistEmail) {
+      return res.status(400).json({
+        field: "email",
+        message: `Email "${req.body.email}" đã được đăng ký, vui lòng chọn email khác`
+      });
     }
+
 
 
     const hashPassword = await bcrypt.hash(req.body.password, 10);
@@ -34,21 +42,21 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const data = {username : req.body.username}
+    const data = { username: req.body.username }
 
-    const user = await User.findOne({ email: req.body.email, username : req.body.username }).select("+password");
-     
+    const user = await User.findOne({ email: req.body.email, username: req.body.username }).select("+password");
+
     if (!user) {
       return res.status(400).json({ message: "email k ton tai" })
     }
-    
+
 
 
 
     const isMatch = await bcrypt.compare(req.body.password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Sai mật khẩu" })
-      
+
     }
 
 
@@ -60,14 +68,14 @@ export const login = async (req, res) => {
       sameSite: "strict",
       maxAge: 15 * 60 * 1000
     });
-    
+
 
 
     user.password = undefined;
     return res.status(200).json({
       message: "Đăng nhập thành công",
       token,
-      data : user
+      data: user
     })
 
   } catch (error) {
@@ -76,5 +84,5 @@ export const login = async (req, res) => {
 }
 
 export const Logout = async (req, res) => {
-res.clearCookie()
+  res.clearCookie()
 }

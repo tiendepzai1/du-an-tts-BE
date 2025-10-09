@@ -13,7 +13,13 @@ import mongoose from 'mongoose';
     password: {
         type: String,
         required: true  
+    },
+    owner: {
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "Broad"
     }
+},{timestamps : true,
+    versionKey : false
 });
 
 const User = mongoose.model('User', UserSchema);
