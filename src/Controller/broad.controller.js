@@ -32,78 +32,78 @@ export const BroadCreate = async (req, res) => {
   }
 }
 
-export const ListBroad = async (req,res)=>{
+export const ListBroad = async (req, res) => {
   try {
-    
-  
-  const checkBroad = await Broad.find();
-  if(checkBroad === 0){
-    return res.status(200).json({message :"k có broad nào"})
-  }
-  return res.status(200).json({
-    data : checkBroad
-  })
-}catch (error) {
+
+
+    const checkBroad = await Broad.find();
+    if (checkBroad === 0) {
+      return res.status(200).json({ message: "k có broad nào" })
+    }
+    return res.status(200).json({
+      data: checkBroad
+    })
+  } catch (error) {
     console.log("error")
   }
 
 }
-export const DeleteBroad = async (req,res)=>{
+export const DeleteBroad = async (req, res) => {
   try {
-    const {id} = req.params;
+    const { id } = req.params;
     const broad = await Broad.findById(id);
-    if(!broad){
+    if (!broad) {
       return res.status(404).json({
-        message : "không tìm thấy id cần xóa"
+        message: "không tìm thấy id cần xóa"
       })
     }
     await Broad.findByIdAndDelete(id);
     return res.status(201).json({
-      message : "xóa thành công"
+      message: "xóa thành công"
     })
-    
+
   } catch (error) {
     console.log(error)
   }
 }
 
-export const GetByIdBroad = async(req,res)=>{
-  
+export const GetByIdBroad = async (req, res) => {
+
   const broadId = req.body.id
-  if(!broadId){
+  if (!broadId) {
     return res.status(400).json({
-      message : "không tìm thấy id"
+      message: "không tìm thấy id"
     })
   }
-  const broad = await Broad.getById(id)
+  const broad = await Broad.findById(id)
   return res.status(201).json({
-    message : "tìm kiếm theo id",
-    data : user
+    message: "tìm kiếm theo id",
+    data: user
   })
 }
 
-export const UpdateBroad = async (req,res)=>{
+export const UpdateBroad = async (req, res) => {
   try {
-    
-   
+
+
     const broad = await Broad.findById(id)
     return res.status(201).json({
-      data : broad
+      data: broad
     })
-    if(!broad){
+    if (!broad) {
       return res.status(400).json({
-        message : "id k tồn tại"
+        message: "id k tồn tại"
       })
     }
-    broad.broadName =req.body.broadName || broadName;
+    broad.broadName = req.body.broadName || broadName;
     broad.description = req.body.description || broadName
     const saveBroad = await Broad.save()
     return res.status(201).json({
-      message : "sửa thành công"
+      message: "sửa thành công"
 
     })
   } catch (error) {
     console.log(error)
-    
+
   }
 }
