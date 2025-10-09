@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const BroadSchema = new mongoose.Schema({
     broadName : {
         type : String,
-        require : true,
+        required : true,
         unique : true
         
     },
@@ -13,7 +13,7 @@ const BroadSchema = new mongoose.Schema({
     },
     owner : {
        type : mongoose.Schema.Types.ObjectId,
-       ref:"List"
+       ref:"User"
     }
 },{versionKey : false,timestamps : true})
 

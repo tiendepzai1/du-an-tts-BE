@@ -4,7 +4,9 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 import UserRouter from './Router/user.router.js';
+
 import cors from "cors";
+import routerBroad from './Router/broad.route.js';
 
 
 const app = express();
@@ -31,6 +33,7 @@ app.get('/', (request, response) => {
 })
 
 app.use('/user', UserRouter);
+app.use('/api/broad',routerBroad)
 
 
 const port = process.env.PORT || 3000
