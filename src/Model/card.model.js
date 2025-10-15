@@ -19,13 +19,15 @@ const CardSchema = new mongoose.Schema({
         type : Boolean,
         default : false
     },
-    CreateUserList : {
-        type : mongoose.Schema.ObjectId,
-        ref : "User",
-        require : true
-    },
-    member : {
+    ownerList : [{
+        type : mongoose.Schema.Types.ObjectId,
+        ref : "List"
+    }],
+ 
+    memberUser : [{
         type : mongoose.Schema.ObjectId,
         ref: "User",
-    }
+    }]
 })
+const Card = mongoose.model('Card',CardSchema);
+export default Card;
