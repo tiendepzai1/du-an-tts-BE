@@ -1,6 +1,6 @@
 import express from "express";
 import CardController from "../Controller/card.controller.js";
-import cardMiddleware from "../middlewears/card.middleware.js";
+import cardMiddleware from "../middleware/card.middleware.js";
 
 const router = express.Router();
 

@@ -4,10 +4,14 @@ import { validateList } from "../middleware/list.middleware.js";
 
 const router = express.Router();
 
-router.post("/create", validateList, ListController.createList);
-router.get("/list", ListController.getAllLists);
-router.get("/list/:id", ListController.getListById);
-router.put("/update/:id", validateList, ListController.updateList);
-router.delete("/delete/:id", ListController.deleteList);
+// CRUD List
+router.post("/", validateList, ListController.createList);
+router.get("/", ListController.getAllLists);
+router.get("/:id", ListController.getListById);
+router.put("/:id", validateList, ListController.updateList);
+router.delete("/:id", ListController.deleteList);
+
+// Lấy List theo Broad
+router.get("/broad/:broadId", ListController.getListsByBroadId);
 
 export default router;

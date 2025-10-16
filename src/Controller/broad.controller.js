@@ -8,7 +8,7 @@ export const BroadCreate = async (req, res) => {
     const { broadName } = req.body
     const UserId = req.body.id
 
-    if (!broadName) {
+    if (!broadName || broadName.trim() === "") {
       return res.status(400).json({
         message: "broadName k được bỏ trống"
       })
@@ -25,6 +25,10 @@ export const BroadCreate = async (req, res) => {
       broadName: req.body.broadName,
       description: req.body.description,
       owner: UserId,
+
+    })
+    return res.status(200).json({
+      message: "thêm broad thanh công"
     })
   } catch (error) {
     console.log(error)
@@ -34,76 +38,110 @@ export const BroadCreate = async (req, res) => {
 
 export const ListBroad = async (req, res) => {
   try {
+    const broadList = await Broad.find();
 
-
-    const checkBroad = await Broad.find();
-    if (checkBroad === 0) {
-      return res.status(200).json({ message: "k có broad nào" })
+    if (broadList.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Không có board nào"
+      });
     }
-    return res.status(200).json({
-      data: checkBroad
-    })
-  } catch (error) {
-    console.log("error")
-  }
 
-}
+    return res.status(200).json({
+      success: true,
+      data: broadList
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy danh sách board:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi server: " + error.message
+    });
+  }
+};
+
 export const DeleteBroad = async (req, res) => {
   try {
     const { id } = req.params;
     const broad = await Broad.findById(id);
     if (!broad) {
       return res.status(404).json({
-        message: "không tìm thấy id cần xóa"
-      })
+        message: "Không tìm thấy id cần xóa",
+      });
     }
     await Broad.findByIdAndDelete(id);
-    return res.status(201).json({
-      message: "xóa thành công"
-    })
-
+    return res.status(200).json({
+      message: "Xóa thành công",
+    });
   } catch (error) {
-    console.log(error)
+    console.error("Lỗi khi xóa broad:", error);
+    return res.status(500).json({
+      message: "Lỗi server: " + error.message,
+    });
   }
-}
-
+};
 export const GetByIdBroad = async (req, res) => {
+  try {
+    const { id } = req.params; // ✅ Lấy id từ URL, ví dụ /broad/detail/:id
 
-  const broadId = req.body.id
-  if (!broadId) {
-    return res.status(400).json({
-      message: "không tìm thấy id"
-    })
+    // ✅ Tìm board theo id và lấy luôn các list liên quan
+    const broad = await Broad.findById(id)
+      .populate("ownerList"); // Lấy chi tiết các list từ ref "List"
+
+    // ✅ Nếu không tìm thấy board
+    if (!broad) {
+      return res.status(404).json({
+        success: false,
+        message: "Không tìm thấy board",
+      });
+    }
+
+    // ✅ Trả dữ liệu board kèm list
+    return res.status(200).json({
+      success: true,
+      data: broad,
+    });
+  } catch (error) {
+    console.error("Lỗi khi lấy chi tiết board:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Lỗi server: " + error.message,
+    });
   }
-  const broad = await Broad.findById(id)
-  return res.status(201).json({
-    message: "tìm kiếm theo id",
-    data: user
-  })
-}
+};
 
 export const UpdateBroad = async (req, res) => {
   try {
+    const { id } = req.params;
+    const { broadName, description } = req.body;
 
-
-    const broad = await Broad.findById(id)
-    return res.status(201).json({
-      data: broad
-    })
-    if (!broad) {
+    if (!id) {
       return res.status(400).json({
-        message: "id k tồn tại"
-      })
+        message: "ID không được bỏ trống"
+      });
     }
-    broad.broadName = req.body.broadName || broadName;
-    broad.description = req.body.description || broadName
-    const saveBroad = await Broad.save()
-    return res.status(201).json({
-      message: "sửa thành công"
 
-    })
+    const broad = await Broad.findById(id);
+    if (!broad) {
+      return res.status(404).json({
+        message: "Không tìm thấy board với ID này"
+      });
+    }
+
+    // Update fields
+    if (broadName) broad.broadName = broadName;
+    if (description !== undefined) broad.description = description;
+
+    const updatedBroad = await broad.save();
+
+    return res.status(200).json({
+      message: "Cập nhật board thành công",
+      data: updatedBroad
+    });
   } catch (error) {
-    console.log(error)
-
+    console.log("Error updating broad:", error);
+    return res.status(500).json({
+      message: "Lỗi server: " + error.message
+    });
   }
 }
