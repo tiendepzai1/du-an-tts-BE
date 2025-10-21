@@ -48,15 +48,40 @@ class ListController {
       res.status(400).json({ success: false, message: error.message });
     }
   }
+async getListsByBroadId(req, res) {
+  const { broadId } = req.params;
 
-  async getListsByBroadId(req, res) {
-    try {
-      const lists = await ListService.getListsByBroadId(req.params.broadId);
-      res.status(200).json({ success: true, data: lists, message: "Lists retrieved successfully" });
-    } catch (error) {
-      res.status(400).json({ success: false, message: error.message });
+  try {
+    if (!broadId || broadId.length !== 24) {
+      return res.status(400).json({
+        success: false,
+        message: "ID board không hợp lệ",
+      });
     }
+
+    const lists = await ListService.getListsByBroadId(broadId);
+
+    if (!lists || lists.length === 0) {
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: "Chưa có danh sách nào trong board này",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: lists,
+      message: "Lấy danh sách thành công",
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message || "Đã xảy ra lỗi khi lấy danh sách",
+    });
   }
+}
+
 }
 
 export default new ListController();

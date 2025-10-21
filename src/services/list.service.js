@@ -74,10 +74,12 @@ class ListService {
 
   async getListsByBroadId(broadId) {
     if (!mongoose.Types.ObjectId.isValid(broadId)) throw new Error("Invalid board ID");
+
     return await List.find({ ownerBroad: broadId })
       .populate("ownerBroad", "broadName")
-      .populate("ownerCard", "cardName status");
+      .populate("ownerCard", "cardName description dueDate status"); // ✅ THÊM description + dueDate
   }
+
 }
 
 export default new ListService();

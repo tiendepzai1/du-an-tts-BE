@@ -26,6 +26,7 @@ const listSchema = new mongoose.Schema(
       required: true,
     },
 
+
     ownerCard: [
       {
         type: mongoose.Schema.Types.ObjectId,
