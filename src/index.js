@@ -9,6 +9,7 @@ import cors from "cors";
 import routerBroad from './Router/broad.route.js';
 import routerList from "./Router/list.route.js"
 import cardRoutes from "./Router/card.route.js";
+import routerComment from "./Router/comment.router.js"
 
 
 const app = express();
@@ -49,6 +50,7 @@ app.use('/user', UserRouter);
 app.use('/broad', routerBroad);
 app.use('/list', routerList);
 app.use("/card", cardRoutes);
+app.use("/comment",routerComment)
 
 
 const port = process.env.PORT || 3000

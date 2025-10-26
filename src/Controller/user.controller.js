@@ -42,46 +42,36 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const data = { username: req.body.username }
+    const { email, password } = req.body; // Chỉ cần email và password
 
-    const user = await User.findOne({ email: req.body.email, username: req.body.username }).select("+password");
-
+    const user = await User.findOne({ email }).select("+password"); // Chỉ kiểm tra email
     if (!user) {
-      return res.status(400).json({ message: "email k ton tai" })
+      return res.status(400).json({ message: "Email không tồn tại" });
     }
 
-
-
-
-    const isMatch = await bcrypt.compare(req.body.password, user.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      return res.status(400).json({ message: "Sai mật khẩu" })
-
+      return res.status(400).json({ message: "Sai mật khẩu" });
     }
 
-
-    const token = jwt.sign({ id: user.id }, "123456", { expiresIn: "5m" })
-
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET || "123456", { expiresIn: "24h" }); // Tăng thời gian
     res.cookie("access_token", token, {
       httpOnly: true,
       secure: false,
       sameSite: "strict",
-      maxAge: 15 * 60 * 1000
+      maxAge: 24 * 60 * 60 * 1000, // 24 giờ
     });
-
-
 
     user.password = undefined;
     return res.status(200).json({
       message: "Đăng nhập thành công",
       token,
-      data: user
-    })
-
+      data: user,
+    });
   } catch (error) {
-    return res.status(500).json({ message: error.message })
+    return res.status(500).json({ message: error.message });
   }
-}
+};
 
 export const Logout = async (req, res) => {
   res.clearCookie()
