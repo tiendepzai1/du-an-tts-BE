@@ -16,9 +16,12 @@ const CardSchema = new mongoose.Schema({
         type: Number,
         default: 0,
     },
+
+    // ✅ FIX: Thay thế Boolean bằng String Enum
     status: {
-        type: Boolean,
-        default: false,
+        type: String,
+        enum: ['todo', 'doing', 'done'], // Giá trị chấp nhận là chuỗi
+        default: 'todo',
     },
 
 

@@ -11,10 +11,6 @@ class ListService {
     const broad = await Broad.findById(ownerBroad);
     if (!broad) throw new Error("Invalid board ID");
 
-    // Tránh trùng tên list trong cùng board
-    // const existingList = await List.findOne({ listName, ownerBroad });
-    // if (existingList) throw new Error("List name already exists in this board");
-
     const newList = await List.create({ listName, description, status, ownerBroad });
 
     broad.ownerList.push(newList._id);
@@ -35,24 +31,26 @@ class ListService {
       .populate("ownerBroad", "broadName")
       .populate("ownerCard", "cardName status");
   }
+
   async updateList(id, data) {
     if (!mongoose.Types.ObjectId.isValid(id)) throw new Error("Invalid list ID");
 
-    const { listName, description, status, ownerBroad } = data;
+    // Dữ liệu data chứa: listName, description, status, ownerBroad, và quan trọng nhất là ownerCard (mảng ID mới)
 
     // Kiểm tra Broad tồn tại (nếu ownerBroad được cập nhật)
-    if (ownerBroad) {
-      const broad = await Broad.findById(ownerBroad);
+    if (data.ownerBroad) {
+      const broad = await Broad.findById(data.ownerBroad);
       if (!broad) throw new Error("Invalid board ID");
     }
 
+    // ✅ FIX: SỬ DỤNG $set: data để lưu trữ mảng ownerCard mới
     const updatedList = await List.findByIdAndUpdate(
       id,
-      { listName, description, status, ownerBroad },
+      { $set: data }, // <-- Thay thế object cũ bằng { $set: data }
       { new: true, runValidators: true }
     )
       .populate("ownerBroad", "broadName")
-      .populate("ownerCard", "cardName status");
+      .populate("ownerCard", "cardName description dueDate status");
 
     if (!updatedList) throw new Error("List not found");
 
@@ -77,7 +75,7 @@ class ListService {
 
     return await List.find({ ownerBroad: broadId })
       .populate("ownerBroad", "broadName")
-      .populate("ownerCard", "cardName description dueDate status"); // ✅ THÊM description + dueDate
+      .populate("ownerCard", "cardName description dueDate status");
   }
 
 }

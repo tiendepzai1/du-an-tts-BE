@@ -1,5 +1,5 @@
 export const validateList = (req, res, next) => {
-  const { listName, status, ownerBroad } = req.body;
+  const { listName, ownerBroad } = req.body; // ❌ Đã xóa status khỏi destructuring
 
   // Required fields
   if (!listName || !ownerBroad) {
@@ -16,13 +16,7 @@ export const validateList = (req, res, next) => {
     });
   }
 
-  const validStatuses = ["việc cần làm", "đang thực hiện", "đã xong"];
-  if (status && !validStatuses.includes(status)) {
-    return res.status(400).json({
-      success: false,
-      message: `status phải là một trong: ${validStatuses.join(", ")}`,
-    });
-  }
+  // ❌ ĐÃ XÓA LOGIC KIỂM TRA status
 
   // Validate ownerBroad ObjectId
   if (!/^[0-9a-fA-F]{24}$/.test(ownerBroad)) {

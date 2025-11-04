@@ -1,12 +1,12 @@
-import e from "express";
+import e from "express"; // (Có thể xóa nếu không dùng)
 import Broad from "../Model/broad.model.js";
-
 
 
 export const BroadCreate = async (req, res) => {
   try {
-    const { broadName } = req.body
-    const UserId = req.body.id
+    const { broadName, description } = req.body
+    // ✅ FIX 1: LẤY USER ID TỪ TOKEN ĐÃ ĐƯỢC XÁC THỰC
+    const UserId = req.user._id
 
     if (!broadName || broadName.trim() === "") {
       return res.status(400).json({
@@ -14,7 +14,8 @@ export const BroadCreate = async (req, res) => {
       })
     }
 
-    const broadCheck = await Broad.findOne({ broadName: req.body.broadName })
+    // 💡 Tên Board có thể trùng giữa các user khác nhau, nhưng để theo logic cũ:
+    const broadCheck = await Broad.findOne({ broadName: req.body.broadName, owner: UserId })
     if (broadCheck) {
       return res.status(400).json({
         message: "tên broad đã tồn tại"
@@ -22,28 +23,32 @@ export const BroadCreate = async (req, res) => {
     }
 
     const broad = await Broad.create({
-      broadName: req.body.broadName,
-      description: req.body.description,
-      owner: UserId,
-
+      broadName: broadName,
+      description: description,
+      owner: UserId, // ✅ Gán owner
     })
     return res.status(200).json({
-      message: "thêm broad thanh công"
+      message: "thêm broad thanh công",
+      data: broad // ✅ Trả về dữ liệu Broad vừa tạo
     })
   } catch (error) {
-    console.log(error)
-
+    console.error("Lỗi khi tạo broad:", error)
+    return res.status(500).json({ message: "Lỗi server: " + error.message })
   }
 }
 
 export const ListBroad = async (req, res) => {
   try {
-    const broadList = await Broad.find();
+    // ✅ FIX 2: CHỈ TÌM BOARD CỦA NGƯỜI DÙNG HIỆN TẠI
+    const userId = req.user._id;
+    const broadList = await Broad.find({ owner: userId });
 
     if (broadList.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Không có board nào"
+      // ✅ Trả về 200 OK và mảng rỗng nếu không có board (không phải 404)
+      return res.status(200).json({
+        success: true,
+        data: [],
+        message: "Không có board nào của bạn"
       });
     }
 
@@ -64,11 +69,21 @@ export const DeleteBroad = async (req, res) => {
   try {
     const { id } = req.params;
     const broad = await Broad.findById(id);
+
     if (!broad) {
       return res.status(404).json({
-        message: "Không tìm thấy id cần xóa",
+        message: "Không tìm thấy broad cần xóa",
       });
     }
+
+    // ✅ CHECK AUTHORIZATION: Chỉ chủ sở hữu mới được xóa
+    if (broad.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Bạn không có quyền xóa broad này"
+      });
+    }
+
+    // 💡 Có thể thêm logic xóa tất cả List và Card thuộc về Board này trước khi xóa Board.
     await Broad.findByIdAndDelete(id);
     return res.status(200).json({
       message: "Xóa thành công",
@@ -80,15 +95,14 @@ export const DeleteBroad = async (req, res) => {
     });
   }
 };
+
 export const GetByIdBroad = async (req, res) => {
   try {
-    const { id } = req.params; // ✅ Lấy id từ URL, ví dụ /broad/detail/:id
+    const { id } = req.params;
 
-    // ✅ Tìm board theo id và lấy luôn các list liên quan
     const broad = await Broad.findById(id)
       .populate("ownerList"); // Lấy chi tiết các list từ ref "List"
 
-    // ✅ Nếu không tìm thấy board
     if (!broad) {
       return res.status(404).json({
         success: false,
@@ -96,7 +110,13 @@ export const GetByIdBroad = async (req, res) => {
       });
     }
 
-    // ✅ Trả dữ liệu board kèm list
+    // ✅ CHECK AUTHORIZATION: Chỉ chủ sở hữu mới được xem chi tiết
+    if (broad.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Bạn không có quyền truy cập broad này"
+      });
+    }
+
     return res.status(200).json({
       success: true,
       data: broad,
@@ -125,6 +145,13 @@ export const UpdateBroad = async (req, res) => {
     if (!broad) {
       return res.status(404).json({
         message: "Không tìm thấy board với ID này"
+      });
+    }
+
+    // ✅ CHECK AUTHORIZATION: Chỉ chủ sở hữu mới được cập nhật
+    if (broad.owner.toString() !== req.user._id.toString()) {
+      return res.status(403).json({
+        message: "Bạn không có quyền cập nhật broad này"
       });
     }
 
