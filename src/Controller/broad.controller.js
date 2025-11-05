@@ -5,8 +5,8 @@ import Broad from "../Model/broad.model.js";
 export const BroadCreate = async (req, res) => {
   try {
     const { broadName, description } = req.body
-    // ✅ FIX 1: LẤY USER ID TỪ TOKEN ĐÃ ĐƯỢC XÁC THỰC
-    const UserId = req.user._id
+    // ✅ LẤY USER ID TỪ TOKEN ĐÃ ĐƯỢC XÁC THỰC
+    const UserId = req.user.id // Dùng req.user.id thay vì req.user._id cho nhất quán
 
     if (!broadName || broadName.trim() === "") {
       return res.status(400).json({
@@ -14,7 +14,7 @@ export const BroadCreate = async (req, res) => {
       })
     }
 
-    // 💡 Tên Board có thể trùng giữa các user khác nhau, nhưng để theo logic cũ:
+    // Tên Board có thể trùng giữa các user khác nhau, nhưng để theo logic cũ:
     const broadCheck = await Broad.findOne({ broadName: req.body.broadName, owner: UserId })
     if (broadCheck) {
       return res.status(400).json({
@@ -39,12 +39,18 @@ export const BroadCreate = async (req, res) => {
 
 export const ListBroad = async (req, res) => {
   try {
-    // ✅ FIX 2: CHỈ TÌM BOARD CỦA NGƯỜI DÙNG HIỆN TẠI
-    const userId = req.user._id;
-    const broadList = await Broad.find({ owner: userId });
+    // ✅ CHỈ TÌM BOARD CỦA NGƯỜI DÙNG HIỆN TẠI
+    const userId = req.user.id;
+
+    // ✅ TÌM BOARD MÀ USER LÀ OWNER HOẶC MEMBER
+    const broadList = await Broad.find({
+      $or: [
+        { owner: userId },
+        { members: userId }
+      ]
+    });
 
     if (broadList.length === 0) {
-      // ✅ Trả về 200 OK và mảng rỗng nếu không có board (không phải 404)
       return res.status(200).json({
         success: true,
         data: [],
@@ -77,7 +83,7 @@ export const DeleteBroad = async (req, res) => {
     }
 
     // ✅ CHECK AUTHORIZATION: Chỉ chủ sở hữu mới được xóa
-    if (broad.owner.toString() !== req.user._id.toString()) {
+    if (broad.owner.toString() !== req.user.id.toString()) { // Dùng req.user.id
       return res.status(403).json({
         message: "Bạn không có quyền xóa broad này"
       });
@@ -96,9 +102,11 @@ export const DeleteBroad = async (req, res) => {
   }
 };
 
+// Hàm lấy chi tiết board theo ID (ĐÃ SỬA LỖI 403)
 export const GetByIdBroad = async (req, res) => {
   try {
     const { id } = req.params;
+    const userId = req.user.id; // Lấy ID người dùng hiện tại
 
     const broad = await Broad.findById(id)
       .populate("ownerList"); // Lấy chi tiết các list từ ref "List"
@@ -110,10 +118,13 @@ export const GetByIdBroad = async (req, res) => {
       });
     }
 
-    // ✅ CHECK AUTHORIZATION: Chỉ chủ sở hữu mới được xem chi tiết
-    if (broad.owner.toString() !== req.user._id.toString()) {
+    // ✅ LOGIC MỚI: Kiểm tra xem người dùng có phải là Owner HOẶC Member không
+    const isOwner = broad.owner.toString() === userId.toString();
+    const isMember = broad.members.some(memberId => memberId.toString() === userId.toString());
+
+    if (!isOwner && !isMember) {
       return res.status(403).json({
-        message: "Bạn không có quyền truy cập broad này"
+        message: "Bạn không có quyền truy cập board này"
       });
     }
 
@@ -134,6 +145,7 @@ export const UpdateBroad = async (req, res) => {
   try {
     const { id } = req.params;
     const { broadName, description } = req.body;
+    const userId = req.user.id;
 
     if (!id) {
       return res.status(400).json({
@@ -149,7 +161,7 @@ export const UpdateBroad = async (req, res) => {
     }
 
     // ✅ CHECK AUTHORIZATION: Chỉ chủ sở hữu mới được cập nhật
-    if (broad.owner.toString() !== req.user._id.toString()) {
+    if (broad.owner.toString() !== userId.toString()) {
       return res.status(403).json({
         message: "Bạn không có quyền cập nhật broad này"
       });

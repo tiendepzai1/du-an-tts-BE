@@ -10,6 +10,7 @@ import routerBroad from './Router/broad.route.js';
 import routerList from "./Router/list.route.js"
 import cardRoutes from "./Router/card.route.js";
 import routerComment from "./Router/comment.router.js"
+import invitationRoutes from "./Router/invitation.route.js"
 
 
 const app = express();
@@ -50,7 +51,8 @@ app.use('/user', UserRouter);
 app.use('/broad', routerBroad);
 app.use('/list', routerList);
 app.use("/card", cardRoutes);
-app.use("/comment",routerComment)
+app.use("/comment", routerComment)
+app.use("/invitation", invitationRoutes)
 
 
 const port = process.env.PORT || 3000

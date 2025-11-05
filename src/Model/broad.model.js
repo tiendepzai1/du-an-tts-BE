@@ -4,19 +4,24 @@ const BroadSchema = new mongoose.Schema({
     broadName: {
         type: String,
         required: true,
-        // ❌ HÃY XÓA: unique : true (đã bị xóa để sử dụng Composite Index)
     },
     description: {
         type: String,
         default: ""
     },
 
-    // ✅ FIX 1: Đổi từ ownerUser array sang owner (single ObjectId)
+    // ID người tạo
     owner: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
-        required: true // Đảm bảo luôn có owner
+        required: true
     },
+
+    // Trường thành viên cho lời mời
+    members: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User"
+    }],
 
     ownerList: [{
         type: mongoose.Schema.Types.ObjectId,
@@ -25,8 +30,7 @@ const BroadSchema = new mongoose.Schema({
 
 }, { versionKey: false, timestamps: true })
 
-// ✅ FIX 2: Thêm index tổng hợp để tên Board là DUY NHẤT CHO MỖI USER
-// Điều này cho phép nhiều user có Board cùng tên (khắc phục lỗi E11000)
+// Index tổng hợp để tên Board là DUY NHẤT CHO MỖI USER
 BroadSchema.index({ broadName: 1, owner: 1 }, { unique: true });
 
 const Broad = mongoose.model("Broad", BroadSchema);

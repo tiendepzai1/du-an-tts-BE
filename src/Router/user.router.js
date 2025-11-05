@@ -1,12 +1,16 @@
 import express from 'express';
-import { register, login } from '../Controller/user.controller.js';
+import { register, login, searchUsers } from '../Controller/user.controller.js';
 import jwt from 'jsonwebtoken';
 import User from '../Model/user.model.js';
+import verifyToken from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 router.post('/register', register);
 router.post('/login', login);
+
+// Search users route (protected)
+router.get('/search', verifyToken, searchUsers);
 
 router.get('/me', async (req, res) => {
   try {
