@@ -109,7 +109,16 @@ export const GetByIdBroad = async (req, res) => {
     const userId = req.user.id; // Lấy ID người dùng hiện tại
 
     const broad = await Broad.findById(id)
-      .populate("ownerList"); // Lấy chi tiết các list từ ref "List"
+      .populate({
+        path: "ownerList",
+        populate: {
+          path: "ownerCard",
+          populate: {
+            path: "memberUser",
+            select: "name email"
+          }
+        }
+      }); // Lấy chi tiết các list và cards với memberUser
 
     if (!broad) {
       return res.status(404).json({

@@ -11,7 +11,13 @@ export const addComment = async (req, res) => {
     }
 
     const comment = await Comment.create({ cardId, userId, content });
-    res.status(201).json(comment);
+    const populatedComment = await Comment.findById(comment._id)
+      .populate('userId', 'name email');
+
+    res.status(201).json({
+      message: 'Thêm bình luận thành công',
+      data: populatedComment
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Lỗi server khi thêm bình luận' });
@@ -24,9 +30,12 @@ export const getCommentsByCard = async (req, res) => {
     const { cardId } = req.params;
     const comments = await Comment.find({ cardId })
       .populate('userId', 'name email')
-      .sort({ createdAt: 1 });
+      .sort({ createdAt: -1 }); // Mới nhất trước
 
-    res.json(comments);
+    res.status(200).json({
+      message: 'Lấy bình luận thành công',
+      data: comments
+    });
   } catch (error) {
     res.status(500).json({ message: 'Lỗi server khi lấy bình luận' });
   }

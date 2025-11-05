@@ -6,13 +6,17 @@ import {
   deleteComment
 } from '../Controller/comment.controller.js';
 
-import verifyToken from '../middleware/comment.middleware.js';
+import verifyToken from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
-router.post('/add', verifyToken, addComment);
+// POST /comment - Tạo comment mới
+router.post('/', verifyToken, addComment);
+// GET /comment/card/:cardId - Lấy comments theo cardId
 router.get('/card/:cardId', getCommentsByCard);
+// PUT /comment/:commentId - Cập nhật comment
 router.put('/:commentId', verifyToken, updateComment);
+// DELETE /comment/:commentId - Xóa comment
 router.delete('/:commentId', verifyToken, deleteComment);
 
 export default router;

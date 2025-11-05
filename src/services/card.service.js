@@ -8,12 +8,12 @@ const CardService = {
     const savedCard = await card.save();
 
     // 🔁 Nếu có ownerLists, cập nhật ngược lại các List
- if (cardData.ownerLists && cardData.ownerLists.length > 0) {
-  await List.updateMany(
-    { _id: { $in: cardData.ownerLists } },
-    { $addToSet: { ownerCard: savedCard._id } } // ✅ đúng với schema
-  );
-}
+    if (cardData.ownerLists && cardData.ownerLists.length > 0) {
+      await List.updateMany(
+        { _id: { $in: cardData.ownerLists } },
+        { $addToSet: { ownerCard: savedCard._id } } // ✅ đúng với schema
+      );
+    }
 
 
     return savedCard;
@@ -32,7 +32,8 @@ const CardService = {
   },
 
   updateCard: async (id, updatedData) => {
-    return await Card.findByIdAndUpdate(id, updatedData, { new: true });
+    return await Card.findByIdAndUpdate(id, updatedData, { new: true })
+      .populate("memberUser", "name email");
   },
 
   deleteCard: async (id) => {
